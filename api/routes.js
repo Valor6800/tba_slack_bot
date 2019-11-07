@@ -4,8 +4,8 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./controllers');
 
-router.get('/', controller.getBase);
+router.post('/slack/actions', controller.slack_actions);
 
-router.post('/', controller.webhook);
+router.post('/slack/command/standup', controller.slack_command);
 
 module.exports = router;

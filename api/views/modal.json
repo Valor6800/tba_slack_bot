@@ -1,0 +1,71 @@
+{
+    "view": {
+        "callback_id": "standup",
+        "type": "modal",
+        "title": {
+            "type": "plain_text",
+            "text": "Standup",
+            "emoji": true
+        },
+        "submit": {
+            "type": "plain_text",
+            "text": "Submit",
+            "emoji": true
+        },
+        "close": {
+            "type": "plain_text",
+            "text": "Cancel",
+            "emoji": true
+        },
+        "blocks": [
+            {
+                "type": "input",
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": "previous_day_summary",
+                    "multiline": true,
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "What did you do during the previous day of robots?"
+                    }
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Previous Day Summary"
+                }
+            },
+            {
+                "type": "input",
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": "next_day_summary",
+                    "multiline": true,
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "What are you going to do today?"
+                    }
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Current Day Summary"
+                }
+            },
+            {
+                "type": "input",
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": "blockers",
+                    "multiline": true,
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "Any problems, or items that are blocking your progress?"
+                    }
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Blockers?"
+                }
+            }
+        ]
+    }
+}

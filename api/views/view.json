@@ -1,0 +1,27 @@
+{
+    "text": "Daily standup time!",
+    "blocks": [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Daily Standup for {{date}}*\nYou have 30 minutes to complete the following standup report"
+            }
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "emoji": true,
+                        "text": "Start Standup"
+                    },
+                    "style": "primary",
+                    "value": "send_standup"
+                }
+            ]
+        }
+    ]
+}

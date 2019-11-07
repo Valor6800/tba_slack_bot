@@ -1,77 +1,77 @@
 'use strict'
 
-var request = require("request");
+const { WebClient } = require('@slack/web-api');
+const request = require("request");
+const fs = require('fs');
+const dateFormat = require('dateformat');
+
 const config = require('../config');
+config.slack_http_options.headers.Authorization += config.slack_auth_token;
 
-var pre_url = 'https://maker.ifttt.com/trigger/';
-var post_url = '/with/key/' + config.maker_key;
+const slack = new WebClient(config.slack_auth_token);
 
-function send_webhook(trigger, val1, val2, val3) {
-    var options = {
-        method: 'POST',
-        url: pre_url + trigger + post_url,
-        headers: {
-            'Content-Type': 'application/json' },
-        body: {
-            value1: val1,
-            value2: val2,
-            value3: val3
-        },
-        json: true
-    };
+let data_cache = {};
 
-    request(options, function (error, response, body) {
-        if (error) throw new Error(error);
+exports.slack_actions = function(req, res) {
+
+    // Parse incoming payload
+    let payload = JSON.parse(req.body.payload);
+    let username = payload.user.username;
+
+    // Action is someone opening up a modal
+    if (payload.type === 'block_actions') {
+        // Parse modal template
+        let modal = JSON.parse(fs.readFileSync('api/views/modal.json'));
+        modal.trigger_id = payload.trigger_id;
+        config.slack_http_options.body = modal;
+        config.slack_http_options.url += 'views.open';
+        // Respond with the modal to open up
+        request(config.slack_http_options, function (error, response, body) {
+            if (error) throw new Error(error);
+        });
+        res.sendStatus(200);
+
+    // Action is someone submitting up a modal
+    } else if (payload.type === 'view_submission') {
+
+        // Check to see if the modal is the standup mnodal
+        if (payload.view.callback_id === 'standup') {
+
+            // Cache response
+            data_cache[username] = {};
+            for (var key in payload.view.state.values) {
+                let content = payload.view.state.values[key];
+                data_cache[username][Object.keys(content)[0]] = content[Object.keys(content)[0]].value;
+            }
+            console.log(data_cache);
+
+            res.json({"response_action": "clear"});
+        }
+    }
+}
+
+exports.slack_command = function(req, res) {
+    let view = JSON.parse(fs.readFileSync('api/views/view.json'));
+    res.json(view);
+}
+
+exports.send_standup = function(channel) {
+    let payload = JSON.parse(fs.readFileSync('api/views/view.json'));
+    payload.channel = channel;
+
+    let currTime = dateFormat(new Date(), "dddd, mmmm dS");
+    payload.blocks[0].text.text = payload.blocks[0].text.text.replace("{{date}}", currTime);
+
+    slack.chat.postMessage(payload).then(function(res) {
+        console.log('Daily standup sent with ID: ', res.ts);
     });
 }
 
-exports.getBase = function(req, res) {
-    res.status(200);
-    res.type('html');
-    res.send(`<html><body>
-    <h2>TBA Slack Bot</h2>
-    </body></html>`);
-};
-
-var sendJSONresponse = function(res, status, content) {
-    res.status(status);
-    res.json(content);
+exports.send_standup_report = function() {
+    let payload = JSON.parse(fs.readFileSync('api/views/report.json'));
+    
+    payload.channel = "CQCAC4UVC";
+    slack.chat.postMessage(payload).then(function(res) {
+        console.log('Standup report sent with ID: ', res.ts);
+    });
 }
-
-exports.webhook = function(req, res) {
-
-    let message_type = req.body.message_type;
-    let message_data = req.body.message_data;
-
-    // Verification
-    if (message_type === 'verification') {
-        console.log('Verification key: ' + message_data.verification_key);
-        sendJSONresponse(res, 200, 'Verification key receieved');
-    }
-
-    // Upcoming match
-    if (message_type === 'upcoming_match') {
-
-        let link = 'www.thebluealliance.com/match/' + message_data.match_key;
-        let time = (new Date(message_data.predicted_time)).toLocaleTimeString();
-        let teams = message_data.team_keys;
-        let blue_teams  = teams[0].replace('frc','') + ', ' + teams[1].replace('frc','') + ', ' + teams[2].replace('frc','');
-        let red_teams = teams[3].replace('frc','') + ', ' + teams[4].replace('frc','') + ', ' + teams[5].replace('frc','');
-        let match = message_data.match_key.split('_')[1].toUpperCase();
-
-        let payload = 'Red teams: ' + red_teams +'<br>';
-        payload += 'Blue teams: ' + blue_teams;
-
-        send_webhook(message_type, match, link, payload);
-    }
-
-    // Match result
-    if (message_type === 'match_score') {
-
-        let link = 'www.thebluealliance.com/match/' + message_data.match.key;
-        
-    }
-
-
-}
-
