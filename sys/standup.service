@@ -1,0 +1,15 @@
+[Unit]
+Description=Standup bot
+
+[Service]
+Environment="BABEL_DISABLE_CACHE=1"
+ExecStart=/home/ubuntu/tba_slack_bot/index.js
+Restart=always
+User=nobody
+Group=nogroup
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+WorkingDirectory=/home/ubuntu/tba_slack_bot/
+
+[Install]
+WantedBy=multi-user.target
