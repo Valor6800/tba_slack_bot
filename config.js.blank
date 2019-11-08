@@ -1,0 +1,18 @@
+module.exports = {
+    server_port: 3000,
+    maker_key: '<insert_here>',
+    // Slack tokens
+    slack_auth_token: '<insert_here>',
+    slack_bot_auth_token: '<insert_here>',
+    slack_verify_token: '<insert_here>',
+    slack_client_secret: '<insert_here>',
+    slack_client_id: '<insert_here>',
+    // Channel information
+    slack_mentor_channel: '<insert_here>',
+    slack_general_channel: '<insert_here>',
+    slack_test_channel: '<insert_here>',
+    // Testing information
+    is_testing: true,
+    // Persistent server information
+    report_directory: 'reports'
+}

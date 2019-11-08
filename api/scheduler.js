@@ -18,5 +18,14 @@ module.exports = {
         schedule.scheduleJob(rule, function() {
             this();
         }.bind(callback));
+    },
+    scheduleReport: function (callback) {
+        var rule = new schedule.RecurrenceRule();
+        rule.dayOfWeek = [1, 3];
+        rule.hour = 8;
+        rule.minute = 45;
+        schedule.scheduleJob(rule, function() {
+            this();
+        }.bind(callback));
     }
 };

@@ -13,7 +13,10 @@ const scheduler = require('./api/scheduler');
 const controller = require('./api/controllers');
 
 scheduler.scheduleStandup(function() {
-    controller.send_standup("CQCAC4UVC");
+    controller.send_standup();
+});
+scheduler.scheduleReport(function() {
+    controller.send_standup_report();
 });
 
 var app = express();
