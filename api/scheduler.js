@@ -3,6 +3,8 @@
 var schedule = require('node-schedule');
 const fs = require('fs');
 
+const GMT_offset = 6;
+
 module.exports = {
     // '*/30 * * * * *'
     scheduleTask: function (when_to_run, callback) {
@@ -13,7 +15,7 @@ module.exports = {
     scheduleStandup: function (callback) {
         var rule = new schedule.RecurrenceRule();
         rule.dayOfWeek = [1, 3];
-        rule.hour = 8;
+        rule.hour = 8 + GMT_offset;
         rule.minute = 15;
         schedule.scheduleJob(rule, function() {
             this();
@@ -22,7 +24,7 @@ module.exports = {
     scheduleReport: function (callback) {
         var rule = new schedule.RecurrenceRule();
         rule.dayOfWeek = [1, 3];
-        rule.hour = 8;
+        rule.hour = 8 + GMT_offset;
         rule.minute = 45;
         schedule.scheduleJob(rule, function() {
             this();
