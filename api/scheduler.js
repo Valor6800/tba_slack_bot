@@ -3,7 +3,7 @@
 var schedule = require('node-schedule');
 const fs = require('fs');
 
-const GMT_offset = 6;
+const GMT_offset = 0;
 
 module.exports = {
     // '*/30 * * * * *'

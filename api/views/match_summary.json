@@ -1,0 +1,45 @@
+{
+    "text": "Match report: {{match}}",
+    "blocks": [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Match report*: {{match}}\n{{team}} {{status}} with a score of Blue {{blue_score}}, Red {{red_score}}"
+            }
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*Rocket hatch pts:*\n{{rocket_hatch}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Cargoship hatch pts:*\n{{ship_hatch}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Rocket cargo pts:*\n{{rocket_cargo}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Cargoship cargo pts:*\n{{ship_cargo}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Hab start*\n{{hab_start}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Hab end*\n{{hab_end}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Fouls*\n{{fouls}}"
+                }
+            ]
+        }
+    ]
+}

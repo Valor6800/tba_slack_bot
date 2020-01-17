@@ -8,4 +8,6 @@ router.post('/slack/actions', controller.slack_actions);
 
 router.post('/slack/command/standup', controller.slack_command);
 
+router.post('/bluealliance/webhook', controller.tba_webhook);
+
 module.exports = router;

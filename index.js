@@ -2,19 +2,27 @@
 'use strict'
 
 // Imports
+require('dotenv').config()
 const bodyParser = require('body-parser');
 const express = require('express');
 const http = require('http');
 
 // Read the private configuration file and apply auth tokens
-const config = require('./config');
 const routes = require('./api/routes');
 const scheduler = require('./api/scheduler');
 const controller = require('./api/controllers');
 
-scheduler.scheduleStandup(function() {
+// const TBA = require('./api/tba');
+
+// var tba = new TBA;
+
+// tba.genOPRs('2019txaus', function(oprs) {
+//     console.log(oprs);
+// });
+
+// scheduler.scheduleStandup(function() {
     controller.send_standup();
-});
+// });
 scheduler.scheduleReport(function() {
     controller.send_standup_report();
 });
@@ -27,9 +35,11 @@ app.use('/', routes);
 
 var server = http.createServer(app);
 
-server.listen(config.server_port, function() {
-    console.log('Express started on port ' + config.server_port);
+let port = process.env.PORT || 3000;
+
+server.listen(port, function() {
+    console.log('Express started on port ' + port);
 })
 .on('error', function(e) {
-    console.log('Unable to listen on port %d!', config.server_port);
+    console.log('Unable to listen on port %d!', port);
 });
