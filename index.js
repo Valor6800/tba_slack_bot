@@ -20,11 +20,9 @@ const controller = require('./api/controllers');
 //     console.log(oprs);
 // });
 
-// scheduler.scheduleStandup(function() {
+scheduler.scheduleStandup(function() {
     controller.send_standup();
-// });
-scheduler.scheduleReport(function() {
-    controller.send_standup_report();
+    controller.send_standup_report_thread();
 });
 
 var app = express();

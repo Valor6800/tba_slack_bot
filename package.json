@@ -22,6 +22,7 @@
   "homepage": "https://github.com/ViperbotsValor6800/tba_slack_bot#readme",
   "dependencies": {
     "@slack/web-api": "^5.4.0",
+    "aws-sdk": "^2.605.0",
     "body-parser": "^1.19.0",
     "canvas": "^2.6.0",
     "chart.js": "^2.9.2",

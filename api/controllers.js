@@ -28,6 +28,8 @@ const slack = new WebClient(process.env.slack_bot_oauth_token);
 // Persistent data cache to keep track of user submissions
 let data_cache = [['Name','Yesterday','Today','Blockers']];
 
+let response_thread_ts = '';
+
 // TBA class import and setup
 const TBA = require('../api/tba');
 var tba = new TBA;
@@ -44,7 +46,7 @@ exports.slack_actions = function(req, res) {
         let modal = JSON.parse(fs.readFileSync('api/views/modal.json'));
         modal.trigger_id = payload.trigger_id;
         slack_http_options.body = modal;
-        slack_http_options.url += 'views.open';
+        slack_http_options.url = process.env.slack_api_base + 'views.open';
         // Respond with the modal to open up
         request(slack_http_options, function (error, response, body) {
             if (error) throw new Error(error);
@@ -57,6 +59,8 @@ exports.slack_actions = function(req, res) {
         // Check to see if the modal is the standup mnodal
         if (payload.view.callback_id === 'standup') {
 
+            console.log("Sunmission from: " + username);
+
             // Cache response
             let row = [username];
             let tmp = {};
@@ -66,6 +70,17 @@ exports.slack_actions = function(req, res) {
             }
             row.push(tmp.previous_day_summary, tmp.next_day_summary, tmp.blockers);
             data_cache.push(row);
+
+            let channel = process.env.slack_mentor_channel;
+            slack_http_options.url = process.env.slack_api_base + 'chat.postMessage';
+            slack_http_options.body = {
+                "channel": channel,
+                "thread_ts": response_thread_ts,
+                "text": "*Name*: " + username + "\n*Previous day*: " + tmp.previous_day_summary + "\n*Today*: " + tmp.next_day_summary + "\n*Blockers*: " + tmp.blockers
+            };
+            request(slack_http_options, function (error, response, body) {
+                if (error) throw new Error(error);
+            });
 
             res.json({"response_action": "clear"});
         }
@@ -77,61 +92,6 @@ String.prototype.replaceAll = function(search, replacement) {
     return target.replace(new RegExp(search, 'g'), replacement);
 };
 
-function sendReport(filename) {
-    let channel = process.env.is_testing ? process.env.slack_test_channel : process.env.slack_mentor_channel;
-    request.post({
-        url: 'https://slack.com/api/files.upload',
-        formData: {
-            token: process.env.slack_bot_auth_token,
-            title: "Standup report for " + dateFormat(new Date(), "dddd, mmmm dS"),
-            filename: filename,
-            filetype: "auto",
-            channels: channel,
-            file: fs.createReadStream(process.env.report_directory + '/' + filename),
-        },
-    }, function (err, response) {
-        if (err) console.error(err);
-    });
-}
-
-function generateReport(callback) {
-
-    // Create the reports directory if doesn't exist
-    if (!fs.existsSync(process.env.report_directory)){
-        fs.mkdirSync(process.env.report_directory);
-    }
-
-    // Create the markdown report
-    let results = table(data_cache);
-    let header = '## Report for ' + dateFormat(new Date(), "dddd, mmmm dS, yyyy") + '\n\n';
-
-    // Create the filenames for the outputs
-    let markdown_filename = 'report_' + dateFormat(new Date(), 'mm dd yy').replaceAll(' ', '_') + '.md';
-    let pdf_filename = 'report_' + dateFormat(new Date(), 'mm dd yy').replaceAll(' ', '_') + '.pdf';
-
-    // PDF options
-    let options = {
-        dest: process.env.report_directory + '/' + pdf_filename,
-        pdf_options: {
-            format: "A5",
-            margin: "10mm"
-        },
-        stylesheet: "https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css",
-        body_class: "markdown-body",
-        css: ".page-break { page-break-after: always; } .markdown-body { font-size: 8px; } .markdown-body pre > code { white-space: pre-wrap; } "
-    };
-
-    // Write the markdown report to file
-    fs.writeFile(process.env.report_directory + '/' + markdown_filename, header + results, (err) => {
-        if (err) throw err;
-        mdToPdf(process.env.report_directory + '/' + markdown_filename, options)
-        .catch(console.error)
-        .then(function(pdf) {
-            callback(pdf_filename);
-        });
-    });
-}
-
 exports.slack_command = function(req, res) {
     res.sendStatus(200);
     exports.send_standup();
@@ -142,7 +102,7 @@ exports.send_standup = function() {
     data_cache = [['Name','Yesterday','Today','Blockers']];
 
     let payload = JSON.parse(fs.readFileSync('api/views/view.json'));
-    payload.channel = process.env.is_testing ? process.env.slack_test_channel : process.env.slack_general_channel;
+    payload.channel = process.env.slack_general_channel;
 
     let currTime = dateFormat(new Date(), "dddd, mmmm dS");
     payload.blocks[0].text.text = payload.blocks[0].text.text.replace("{{date}}", currTime);
@@ -152,8 +112,26 @@ exports.send_standup = function() {
     });
 }
 
-exports.send_standup_report = function() {
-    generateReport(sendReport);
+exports.send_standup_report_thread = function() {
+
+    let payload = {
+        "text": "Daily standup time!",
+        "blocks": [{
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Daily Standup Report for {{date}}*\nResponses will be posted below as students fill them out!"
+            }
+        }]
+    };
+    payload.channel = process.env.slack_mentor_channel;
+
+    let currTime = dateFormat(new Date(), "dddd, mmmm dS");
+    payload.blocks[0].text.text = payload.blocks[0].text.text.replace("{{date}}", currTime);
+
+    slack.chat.postMessage(payload).then(function(res) {
+        response_thread_ts = res.ts;
+    });
 }
 
 function sendMatchSummary(match_data) {
@@ -168,7 +146,7 @@ function sendMatchSummary(match_data) {
 
             // Parse modal template
             let payload = JSON.parse(fs.readFileSync('api/views/match_summary.json'));
-            payload.channel = process.env.is_testing ? process.env.slack_test_channel : process.env.slack_general_channel;
+            payload.channel = process.env.slack_general_channel;
 
             // Gather generic year-to-year data
             let in_blue = tba.countInArray(match.alliances.blue.team_keys, 'frc' + team);
