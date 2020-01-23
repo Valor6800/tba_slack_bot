@@ -6,7 +6,6 @@ const fs = require('fs');
 const GMT_offset = 6;
 
 module.exports = {
-    // '*/30 * * * * *'
     scheduleTask: function (when_to_run, callback) {
         schedule.scheduleJob(when_to_run, function() {
             this();
@@ -20,5 +19,8 @@ module.exports = {
         schedule.scheduleJob(rule, function() {
             this();
         }.bind(callback));
+    },
+    scheduleWakeup: function(callback) {
+        var j = schedule.scheduleJob('*/5 * * * *', callback);
     }
 };

@@ -112,6 +112,11 @@ exports.send_standup = function() {
     });
 }
 
+exports.wake = function(req, res) {
+    res.sendStatus(200);
+    console.log("Wake up!");
+};
+
 exports.send_standup_report_thread = function() {
 
     let payload = {

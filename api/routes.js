@@ -10,4 +10,6 @@ router.post('/slack/command/standup', controller.slack_command);
 
 router.post('/bluealliance/webhook', controller.tba_webhook);
 
+router.get('/wake', controller.wake);
+
 module.exports = router;

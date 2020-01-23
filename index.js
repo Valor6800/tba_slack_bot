@@ -25,6 +25,11 @@ scheduler.scheduleStandup(function() {
     controller.send_standup_report_thread();
 });
 
+scheduler.scheduleWakeup(function() {
+    console.log("Sending wakeup");
+    http.get("http://tba-slack-bot.herokuapp.com/wake");
+})
+
 var app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
